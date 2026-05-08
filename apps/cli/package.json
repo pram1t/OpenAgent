@@ -1,6 +1,6 @@
 {
   "name": "@pram1t/mustard",
-  "version": "1.0.0-rc.5",
+  "version": "1.0.0-rc.6",
   "description": "Mustard CLI — an open collaborative IDE for human + AI development. Works with any LLM provider (OpenAI, Anthropic, Gemini, Ollama, OpenAI-compatible).",
   "author": "pram1t",
   "repository": {
@@ -65,7 +65,8 @@
     "@pram1t/mustard-queue": "*",
     "@pram1t/mustard-tools": "*",
     "@pram1t/mustard-server": "*",
-    "@pram1t/mustard-worker": "*"
+    "@pram1t/mustard-worker": "*",
+    "@pram1t/mustard-cli-ui": "*"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

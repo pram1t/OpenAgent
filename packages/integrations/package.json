@@ -1,6 +1,6 @@
 {
   "name": "@pram1t/mustard-integrations",
-  "version": "1.0.0-rc.5",
+  "version": "1.0.0-rc.6",
   "description": "External service integrations for Mustard V2 (GitHub, webhooks)",
   "author": "pram1t",
   "license": "MIT",

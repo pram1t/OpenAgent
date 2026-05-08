@@ -1,6 +1,6 @@
 {
   "name": "@pram1t/mustard-artifact",
-  "version": "1.0.0-rc.5",
+  "version": "1.0.0-rc.6",
   "description": "Versioned artifact protocol with handoff state machine for Mustard V2",
   "author": "pram1t",
   "license": "MIT",

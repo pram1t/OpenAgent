@@ -1,6 +1,6 @@
 {
   "name": "@pram1t/mustard-collab-ai",
-  "version": "1.0.0-rc.5",
+  "version": "1.0.0-rc.6",
   "description": "AI intent engine, zone claiming, and agent coordination for Mustard Collab",
   "author": "pram1t",
   "license": "MIT",

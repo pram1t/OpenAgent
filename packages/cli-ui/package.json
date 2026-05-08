@@ -1,18 +1,19 @@
 {
-  "name": "@pram1t/mustard-llm",
+  "name": "@pram1t/mustard-cli-ui",
   "version": "1.0.0-rc.6",
-  "description": "LLM abstraction layer for Mustard",
+  "description": "Visual identity primitives for Mustard CLI — banner, theme, box, spinner, status, prompt.",
   "author": "pram1t",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/pram1t/Mustard.git",
-    "directory": "packages/llm"
+    "directory": "packages/cli-ui"
   },
   "homepage": "https://github.com/pram1t/Mustard#readme",
   "bugs": {
     "url": "https://github.com/pram1t/Mustard/issues"
   },
+  "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -31,25 +32,25 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && node -e \"require('fs').cpSync('src/assets', 'dist/assets', {recursive: true})\"",
     "dev": "tsc --watch",
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "prepublishOnly": "npm run clean && npm run build"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.71.2",
-    "@google/generative-ai": "^0.24.1",
-    "openai": "^6.16.0",
-    "tiktoken": "^1.0.22",
-    "@pram1t/mustard-config": "*",
-    "@pram1t/mustard-logger": "*"
+    "@clack/prompts": "^0.7.0",
+    "boxen": "^7.1.1",
+    "cli-progress": "^3.12.0",
+    "cli-table3": "^0.6.5",
+    "log-update": "^6.1.0",
+    "ora": "^7.0.1",
+    "picocolors": "^1.0.1",
+    "supports-color": "^9.4.0",
+    "terminal-link": "^3.0.0"
   },
   "devDependencies": {
-    "cross-env": "^10.1.0",
+    "@types/cli-progress": "^3.11.6",
+    "@types/node": "^25.0.9",
     "typescript": "^5.9.3"
-  },
-  "keywords": [
-    "openagent",
-    "llm"
-  ]
+  }
 }

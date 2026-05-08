@@ -1,6 +1,6 @@
 {
   "name": "@pram1t/mustard-server",
-  "version": "1.0.0-rc.5",
+  "version": "1.0.0-rc.6",
   "description": "Fastify HTTP/WebSocket API server for Mustard V2",
   "author": "pram1t",
   "license": "MIT",

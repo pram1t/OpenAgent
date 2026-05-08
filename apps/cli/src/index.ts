@@ -49,6 +49,18 @@ import {
   type ContentItem,
 } from '@pram1t/mustard-mcp';
 import type { Tool, ToolParameters, ToolResult, ExecutionContext } from '@pram1t/mustard-tools';
+import {
+  banner,
+  renderHelp,
+  bootBanner,
+  setTitle,
+  success,
+  warn,
+  error as uiError,
+  info,
+  theme,
+  term,
+} from '@pram1t/mustard-cli-ui';
 
 // Read version from our own package.json so `--version` always reflects
 // the published version. CLI compiles to CommonJS, so __dirname is a
@@ -455,142 +467,94 @@ function parseArgs(): {
 }
 
 /**
- * Print help message
+ * Print help message — rendered via @pram1t/mustard-cli-ui.
  */
 function printHelp(): void {
-  console.log(`
-Mustard CLI v${VERSION}
-
-Usage: mustard [options] <prompt>
-       mustard init [options]
-       mustard config <subcommand> [options]
-       mustard plans [subcommand] [options]
-       mustard worker [subcommand] [options]
-       mustard request <subcommand> <prompt> [options]
-       mustard mcp <subcommand> [options]
-       mustard session <subcommand> [options]
-
-Options:
-  -h, --help                    Show this help message
-  -v, --version                 Show version number
-  -m, --model                   Model to use (provider-specific defaults)
-  -p, --provider                LLM provider: openai, anthropic, gemini, ollama, openai-compatible
-  --base-url                    Base URL for ollama or openai-compatible providers
-  -V, --verbose                 Enable verbose output
-  -r, --resume <id>             Resume a previous session
-  --no-save                     Don't save the session
-  -P, --permission-mode <mode>  Permission mode: permissive, default, strict
-  --allow-tool <name>           Always allow a tool (repeatable)
-  --deny-tool <name>            Always deny a tool (repeatable)
-  -O, --orchestrate             Use multi-worker orchestrated execution
-  -A, --approve                 Require plan approval before executing (with -O)
-  --max-workers <n>             Maximum parallel workers (default: 3)
-
-Providers:
-  openai            OpenAI GPT models (default: gpt-4o)
-  anthropic         Anthropic Claude models (default: claude-sonnet-4-20250514)
-  gemini            Google Gemini models (default: gemini-1.5-pro)
-  ollama            Local Ollama models (default: qwen2.5-coder:7b)
-  openai-compatible Any OpenAI-compatible API (requires --base-url)
-
-Permission Modes:
-  permissive        Allow everything not explicitly denied
-  default           Allow safe tools (Read, Glob, Grep), ask for others
-  strict            Ask for everything not explicitly allowed
-
-Init Subcommand:
-  init                                  Create .mustard/ in current directory
-  init --global                         Create ~/.mustard/ if missing
-  init --model <model>                  Set default model
-  init --provider <provider>            Set default provider
-
-Config Subcommands:
-  config list                           Show merged config with sources
-  config get <key>                      Get specific value
-  config set <key> <value>              Set in project config
-  config set <key> <value> --global     Set in global config
-  config edit                           Open project config in editor
-  config edit --global                  Open global config in editor
-  config path                           Show project config path
-  config path --global                  Show global config path
-
-Worker Subcommands (V2):
-  worker                                List all worker roles
-  worker list                           List all worker roles
-  worker info <role>                    Show detailed worker info
-
-Request Subcommands (V2):
-  request submit "<prompt>"             Plan, review, and execute
-  request execute "<prompt>"            Plan and execute immediately
-
-Server Subcommands (V2):
-  server start                          Start the API server
-  server start --port <port>            Set port (default: 3100)
-  server start --host <host>            Set host (default: 127.0.0.1)
-  server start --api-key <key>          Set API key for auth
-
-Plans Subcommands:
-  plans                                 List all plans
-  plans list                            List all plans
-  plans list --status <status>          List plans by status
-  plans show <id>                       Show plan content
-  plans delete <id>                     Delete plan
-
-Session Subcommands:
-  session list                          List saved sessions
-  session show <id>                     Show session details
-  session delete <id>                   Delete a session
-
-MCP Subcommands:
-  mcp list                              List configured MCP servers
-  mcp add <name> [options]              Add an MCP server
-    --type, -t <stdio|http>             Server type (default: stdio)
-    --command, -c <command>             Command for stdio servers
-    --url, -u <url>                     URL for http servers
-    --arg <value>                       Additional argument (can repeat)
-    --env <KEY=VALUE>                   Environment variable (can repeat)
-  mcp remove <name>                     Remove an MCP server
-
-Environment Variables:
-  OPENAI_API_KEY     For openai and openai-compatible providers
-  ANTHROPIC_API_KEY  For anthropic provider
-  GOOGLE_API_KEY     For gemini provider
-  LOG_LEVEL          Logging level (trace, debug, info, warn, error)
-
-Examples:
-  mustard "Hello, who are you?"
-  mustard --provider anthropic "Explain this code"
-  mustard --provider gemini -m gemini-1.5-flash "Hello"
-  mustard --provider ollama --model llama3.2 "Hello"
-  mustard --provider openai-compatible --base-url http://localhost:1234/v1 "Hi"
-  mustard --permission-mode strict "read package.json"
-  mustard --allow-tool Write --allow-tool Edit "Create a new file"
-
-Session Examples:
-  mustard "Remember the number 42"
-  mustard --resume <sessionId> "What number did I mention?"
-  mustard session list
-  mustard session show <sessionId>
-  mustard session delete <sessionId>
-
-MCP Examples:
-  mustard mcp add filesystem --type stdio --command "npx @modelcontextprotocol/server-filesystem"
-  mustard mcp add api-server --type http --url http://localhost:3000
-  mustard mcp list
-  mustard mcp remove filesystem
-
-V2 Worker/Request Examples:
-  mustard worker                      # List all worker roles
-  mustard worker info architect       # Show architect details
-  mustard request submit "Build a REST API for users"
-  mustard request execute "Add authentication to the API"
-
-Project Config Examples:
-  mustard init                        # Initialize project config
-  mustard config list                 # Show all settings
-  mustard config set model claude-3-opus
-  mustard plans                       # List plans
-`);
+  process.stdout.write(
+    renderHelp({
+      version: VERSION,
+      sections: [
+        {
+          title: 'USAGE',
+          lines: [
+            'mustard [options] <prompt>',
+            'mustard <subcommand> [options]',
+          ],
+        },
+        {
+          title: 'COMMANDS',
+          rows: [
+            ['init', 'create a project or global .mustard/ folder'],
+            ['config', 'inspect / edit your config'],
+            ['plans', 'list, show, or delete saved plans'],
+            ['worker', 'list available worker roles'],
+            ['request', 'submit or execute a multi-worker request'],
+            ['server', 'start the API server'],
+            ['session', 'list / show / delete saved sessions'],
+            ['mcp', 'add / list / remove MCP servers'],
+            ['collab', 'multiplayer fields + sown intents (live)'],
+          ],
+        },
+        {
+          title: 'OPTIONS',
+          rows: [
+            ['-h, --help', 'show this help'],
+            ['-v, --version', 'show version'],
+            ['-m, --model <name>', 'model (provider-specific default)'],
+            ['-p, --provider <name>', 'openai · anthropic · gemini · ollama · openai-compatible'],
+            ['--base-url <url>', 'for ollama / openai-compatible'],
+            ['-r, --resume <id>', 'resume a previous session'],
+            ['--no-save', "don't save the session"],
+            ['-P, --permission-mode <mode>', 'permissive · default · strict'],
+            ['--allow-tool <name>', 'always allow a tool (repeatable)'],
+            ['--deny-tool <name>', 'always deny a tool (repeatable)'],
+            ['-O, --orchestrate', 'multi-worker orchestrated execution'],
+            ['-A, --approve', 'require plan approval (with -O)'],
+            ['--max-workers <n>', 'parallel workers (default 3)'],
+            ['-V, --verbose', 'verbose output'],
+          ],
+        },
+        {
+          title: 'PROVIDERS',
+          rows: [
+            ['openai', 'OpenAI GPT models (default gpt-4o)'],
+            ['anthropic', 'Anthropic Claude models (default claude-sonnet-4)'],
+            ['gemini', 'Google Gemini (default gemini-1.5-pro)'],
+            ['ollama', 'Local Ollama (default qwen2.5-coder:7b)'],
+            ['openai-compatible', 'any OpenAI-compatible API (needs --base-url)'],
+          ],
+        },
+        {
+          title: 'EXAMPLES',
+          lines: [
+            '$ mustard "Hello, who are you?"',
+            '$ mustard --provider anthropic "Explain this code"',
+            '$ mustard --orchestrate "Build a REST API with auth, tests, docs"',
+            '$ mustard collab login --as alice',
+            '$ mustard collab room create "auth refactor"',
+            '$ mustard collab tail <field-id>',
+          ],
+        },
+        {
+          title: 'ENV',
+          rows: [
+            ['OPENAI_API_KEY', 'openai + openai-compatible'],
+            ['ANTHROPIC_API_KEY', 'anthropic'],
+            ['GOOGLE_API_KEY', 'gemini'],
+            ['LOG_LEVEL', 'trace · debug · info · warn · error'],
+          ],
+        },
+        {
+          title: 'LINKS',
+          rows: [
+            ['docs', 'github.com/pram1t/Mustard#readme'],
+            ['issues', 'github.com/pram1t/Mustard/issues'],
+            ['npm', 'npmjs.com/package/@pram1t/mustard'],
+          ],
+        },
+      ],
+    }),
+  );
 }
 
 /**
@@ -915,7 +879,7 @@ async function main(): Promise<void> {
   }
 
   if (args.version) {
-    console.log(`Mustard CLI v${VERSION}`);
+    process.stdout.write(banner({ size: 'inline', version: VERSION }));
     process.exit(0);
   }
 
@@ -987,8 +951,10 @@ async function main(): Promise<void> {
 
   // Require a prompt (for both single-agent and orchestrate modes; request/server have their own args)
   if (!args.requestSubcommand && !args.serverSubcommand && !args.prompt) {
-    console.error('Error: No prompt provided. Use --help for usage information.');
-    process.exit(1);
+    // No args at all? Show the brand banner, not a stark error.
+    // log-update fade-in if TTY, otherwise plain print.
+    await bootBanner({ version: VERSION });
+    process.exit(0);
   }
 
   // Initialize configuration
