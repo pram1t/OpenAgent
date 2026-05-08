@@ -25,7 +25,7 @@ import { join } from 'node:path';
 
 const ROOT = new URL('..', import.meta.url).pathname.replace(/^\//, '');
 const PKG_DIR = join(ROOT, 'packages');
-const TARGET_VERSION = '1.0.0-rc.5';
+const TARGET_VERSION = '1.0.0-rc.6';
 const REPO_URL = 'https://github.com/pram1t/Mustard.git';
 const HOMEPAGE = 'https://github.com/pram1t/Mustard#readme';
 const BUGS_URL = 'https://github.com/pram1t/Mustard/issues';

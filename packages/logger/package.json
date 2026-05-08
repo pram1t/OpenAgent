@@ -1,6 +1,6 @@
 {
   "name": "@pram1t/mustard-logger",
-  "version": "1.0.0-rc.5",
+  "version": "1.0.0-rc.6",
   "description": "Logging utilities for Mustard",
   "author": "pram1t",
   "license": "MIT",

@@ -1,6 +1,6 @@
 {
   "name": "@pram1t/mustard-message-bus",
-  "version": "1.0.0-rc.5",
+  "version": "1.0.0-rc.6",
   "description": "In-memory event bus with pattern matching for Mustard V2",
   "author": "pram1t",
   "license": "MIT",
