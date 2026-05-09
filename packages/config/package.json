@@ -1,6 +1,6 @@
 {
   "name": "@pram1t/mustard-config",
-  "version": "1.0.0-rc.6",
+  "version": "1.0.0-rc.7",
   "description": "Configuration management for Mustard",
   "author": "pram1t",
   "license": "MIT",
@@ -44,7 +44,7 @@
     "typescript": "^5.9.3"
   },
   "keywords": [
-    "openagent",
+    "mustard",
     "config"
   ]
 }

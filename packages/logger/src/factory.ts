@@ -59,7 +59,7 @@ function getDefaultFormat(): 'json' | 'pretty' {
 export function createLogger(config: LoggerConfig = {}): Logger {
   const level = config.level || getDefaultLevel();
   const format = config.format || getDefaultFormat();
-  const name = config.name || 'openagent';
+  const name = config.name || 'mustard';
 
   const pinoOptions: pino.LoggerOptions = {
     name,

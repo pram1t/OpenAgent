@@ -11,44 +11,16 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import * as readline from 'readline';
-import {
-  OpenAIProvider,
-  AnthropicProvider,
-  GeminiProvider,
-  OllamaProvider,
-  OpenAICompatibleProvider,
-  createRouter,
-  type LLMProvider,
-} from '@pram1t/mustard-llm';
-import { createDefaultRegistry, type ToolRegistry } from '@pram1t/mustard-tools';
-import {
-  AgentLoop,
-  PermissionManager,
-  SessionManager,
-  type PermissionMode,
-  type ApprovalCallback,
-  type SessionData,
-} from '@pram1t/mustard-core';
-import { createLogger, setDefaultLogger } from '@pram1t/mustard-logger';
-import {
-  loadConfig,
-  validateStartup,
-  loadResolvedConfig,
-  type HooksConfig,
-} from '@pram1t/mustard-config';
-import { initCommand, configCommand, plansCommand, orchestrateCommand, workerCommand, requestCommand, serverCommand } from './commands/index.js';
-import { createHookExecutor, type HookExecutor } from '@pram1t/mustard-hooks';
-import {
-  MCPRegistry,
-  createRegistry,
-  type ServerConfig,
-  type StdioServerConfig,
-  type HttpServerConfig,
-  type AggregatedTool,
-  type CallToolResult,
-  type ContentItem,
-} from '@pram1t/mustard-mcp';
-import type { Tool, ToolParameters, ToolResult, ExecutionContext } from '@pram1t/mustard-tools';
+
+// ─── Type-only imports (free at runtime — TypeScript erases them) ──────
+import type { LLMProvider } from '@pram1t/mustard-llm';
+import type { ToolRegistry, Tool, ToolParameters, ToolResult, ExecutionContext } from '@pram1t/mustard-tools';
+import type { PermissionMode, ApprovalCallback, SessionData } from '@pram1t/mustard-core';
+import type { HooksConfig } from '@pram1t/mustard-config';
+import type { HookExecutor } from '@pram1t/mustard-hooks';
+import type { ServerConfig, StdioServerConfig, HttpServerConfig, AggregatedTool, CallToolResult, ContentItem, MCPRegistry as MCPRegistryT } from '@pram1t/mustard-mcp';
+
+// ─── cli-ui imports (light, kept eager for fast --help/--version) ──────
 import {
   banner,
   renderHelp,
@@ -61,6 +33,57 @@ import {
   theme,
   term,
 } from '@pram1t/mustard-cli-ui';
+
+// ─── Lazy-loaded value bindings — populated by loadHeavyDeps() ─────────
+// These are populated on first use; for `--help` / `--version` they
+// stay undefined and the heavy modules are never loaded. Drops cold
+// startup from ~1.4s to ~200ms on the fast paths.
+let OpenAIProvider!: typeof import('@pram1t/mustard-llm').OpenAIProvider;
+let AnthropicProvider!: typeof import('@pram1t/mustard-llm').AnthropicProvider;
+let GeminiProvider!: typeof import('@pram1t/mustard-llm').GeminiProvider;
+let OllamaProvider!: typeof import('@pram1t/mustard-llm').OllamaProvider;
+let OpenAICompatibleProvider!: typeof import('@pram1t/mustard-llm').OpenAICompatibleProvider;
+let createRouter!: typeof import('@pram1t/mustard-llm').createRouter;
+let createDefaultRegistry!: typeof import('@pram1t/mustard-tools').createDefaultRegistry;
+let AgentLoop!: typeof import('@pram1t/mustard-core').AgentLoop;
+let PermissionManager!: typeof import('@pram1t/mustard-core').PermissionManager;
+let SessionManager!: typeof import('@pram1t/mustard-core').SessionManager;
+let createLogger!: typeof import('@pram1t/mustard-logger').createLogger;
+let setDefaultLogger!: typeof import('@pram1t/mustard-logger').setDefaultLogger;
+let loadConfig!: typeof import('@pram1t/mustard-config').loadConfig;
+let validateStartup!: typeof import('@pram1t/mustard-config').validateStartup;
+let loadResolvedConfig!: typeof import('@pram1t/mustard-config').loadResolvedConfig;
+let createHookExecutor!: typeof import('@pram1t/mustard-hooks').createHookExecutor;
+let MCPRegistry!: typeof import('@pram1t/mustard-mcp').MCPRegistry;
+let createRegistry!: typeof import('@pram1t/mustard-mcp').createRegistry;
+let initCommand: any, configCommand: any, plansCommand: any, orchestrateCommand: any;
+let workerCommand: any, requestCommand: any, serverCommand: any;
+
+let _heavyDepsLoaded = false;
+async function loadHeavyDeps(): Promise<void> {
+  if (_heavyDepsLoaded) return;
+  // Use require() rather than dynamic import() — both are lazy in CJS
+  // output, but require() avoids Node's CJS-importing-CJS-via-ESM-loader
+  // edge case that throws "Cannot read properties of undefined (reading
+  // 'async')" on certain mixed-module workspace setups.
+  const llm = require('@pram1t/mustard-llm');
+  const tools = require('@pram1t/mustard-tools');
+  const core = require('@pram1t/mustard-core');
+  const logger = require('@pram1t/mustard-logger');
+  const config = require('@pram1t/mustard-config');
+  const hooks = require('@pram1t/mustard-hooks');
+  const mcp = require('@pram1t/mustard-mcp');
+  const cmds = require('./commands/index.js');
+  ({ OpenAIProvider, AnthropicProvider, GeminiProvider, OllamaProvider, OpenAICompatibleProvider, createRouter } = llm);
+  ({ createDefaultRegistry } = tools);
+  ({ AgentLoop, PermissionManager, SessionManager } = core);
+  ({ createLogger, setDefaultLogger } = logger);
+  ({ loadConfig, validateStartup, loadResolvedConfig } = config);
+  ({ createHookExecutor } = hooks);
+  ({ MCPRegistry, createRegistry } = mcp);
+  ({ initCommand, configCommand, plansCommand, orchestrateCommand, workerCommand, requestCommand, serverCommand } = cmds);
+  _heavyDepsLoaded = true;
+}
 
 // Read version from our own package.json so `--version` always reflects
 // the published version. CLI compiles to CommonJS, so __dirname is a
@@ -784,7 +807,7 @@ class MCPToolWrapper implements Tool {
 
   constructor(
     private mcpTool: AggregatedTool,
-    private registry: MCPRegistry
+    private registry: MCPRegistryT
   ) {
     this.name = mcpTool.name;
     this.description = mcpTool.description;
@@ -827,7 +850,7 @@ class MCPToolWrapper implements Tool {
 /**
  * Create MCP registry and connect to servers
  */
-async function createMCPRegistry(verbose: boolean): Promise<MCPRegistry | null> {
+async function createMCPRegistry(verbose: boolean): Promise<MCPRegistryT | null> {
   const mcpConfig = loadMCPConfig();
 
   if (Object.keys(mcpConfig.servers).length === 0) {
@@ -853,7 +876,7 @@ async function createMCPRegistry(verbose: boolean): Promise<MCPRegistry | null> 
 /**
  * Get wrapped MCP tools as Tool instances
  */
-function getMCPTools(registry: MCPRegistry): Tool[] {
+function getMCPTools(registry: MCPRegistryT): Tool[] {
   return registry.getAllTools().map((tool) => new MCPToolWrapper(tool, registry));
 }
 
@@ -882,6 +905,27 @@ async function main(): Promise<void> {
     process.stdout.write(banner({ size: 'inline', version: VERSION }));
     process.exit(0);
   }
+
+  // No-args fast path — show banner and exit (don't load heavy deps).
+  if (
+    !args.help &&
+    !args.requestSubcommand &&
+    !args.serverSubcommand &&
+    !args.mcpSubcommand &&
+    !args.sessionSubcommand &&
+    !args.initSubcommand &&
+    !args.configSubcommand &&
+    !args.plansSubcommand &&
+    !args.workerSubcommand &&
+    !args.prompt
+  ) {
+    await bootBanner({ version: VERSION });
+    process.exit(0);
+  }
+
+  // Past the fast-paths — load the heavy deps (LLM SDKs, tools, MCP, etc.)
+  // This is the cold-startup hit; ~1.2s on first call, near-zero after.
+  await loadHeavyDeps();
 
   // Handle MCP subcommands
   if (args.mcpSubcommand) {
@@ -951,10 +995,13 @@ async function main(): Promise<void> {
 
   // Require a prompt (for both single-agent and orchestrate modes; request/server have their own args)
   if (!args.requestSubcommand && !args.serverSubcommand && !args.prompt) {
-    // No args at all? Show the brand banner, not a stark error.
-    // log-update fade-in if TTY, otherwise plain print.
-    await bootBanner({ version: VERSION });
-    process.exit(0);
+    // Should be caught by the fast-path no-args check above, but kept
+    // as a safety net for combinations like `mustard --provider openai`
+    // (which has no prompt).
+    process.stdout.write(uiError('no prompt provided', {
+      hints: [{ cmd: 'mustard --help', desc: 'see all commands' }],
+    }));
+    process.exit(1);
   }
 
   // Initialize configuration
@@ -1001,7 +1048,7 @@ async function main(): Promise<void> {
     logger.debug('Built-in tools registered', { count: tools.count, tools: tools.getNames() });
 
     // Load MCP tools
-    let mcpRegistry: MCPRegistry | null = null;
+    let mcpRegistry: MCPRegistryT | null = null;
     try {
       mcpRegistry = await createMCPRegistry(args.verbose);
       if (mcpRegistry) {

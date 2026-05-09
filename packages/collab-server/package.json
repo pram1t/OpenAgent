@@ -1,6 +1,6 @@
 {
   "name": "@pram1t/mustard-collab-server",
-  "version": "1.0.0-rc.6",
+  "version": "1.0.0-rc.7",
   "description": "Fastify HTTP+WebSocket server for Mustard Collab",
   "author": "pram1t",
   "license": "MIT",

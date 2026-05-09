@@ -96,7 +96,7 @@ export class MCPRegistry {
 
     // Create and connect client
     const client = new MCPClient(transport, {
-      clientName: 'openagent',
+      clientName: 'mustard',
       clientVersion: '0.0.0',
     });
 

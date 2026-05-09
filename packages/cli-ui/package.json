@@ -1,6 +1,6 @@
 {
   "name": "@pram1t/mustard-cli-ui",
-  "version": "1.0.0-rc.6",
+  "version": "1.0.0-rc.7",
   "description": "Visual identity primitives for Mustard CLI — banner, theme, box, spinner, status, prompt.",
   "author": "pram1t",
   "license": "MIT",

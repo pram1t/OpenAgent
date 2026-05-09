@@ -79,6 +79,7 @@ jobs:
           PACKAGES=(
             packages/logger
             packages/message-bus
+            packages/cli-ui
             packages/config
             packages/core
             packages/llm

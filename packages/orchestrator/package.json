@@ -1,6 +1,6 @@
 {
   "name": "@pram1t/mustard-orchestrator",
-  "version": "1.0.0-rc.6",
+  "version": "1.0.0-rc.7",
   "description": "Multi-worker orchestrator for Mustard V2",
   "author": "pram1t",
   "license": "MIT",

@@ -1,6 +1,6 @@
 {
   "name": "@pram1t/mustard-core",
-  "version": "1.0.0-rc.6",
+  "version": "1.0.0-rc.7",
   "description": "Core functionality for Mustard - Agent Loop and Context Management",
   "author": "pram1t",
   "license": "MIT",
@@ -47,7 +47,7 @@
     "typescript": "^5.9.3"
   },
   "keywords": [
-    "openagent",
+    "mustard",
     "core",
     "agent",
     "llm"

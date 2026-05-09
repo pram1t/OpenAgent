@@ -43,7 +43,7 @@ export interface MCPClientOptions {
 }
 
 const DEFAULT_OPTIONS: Required<MCPClientOptions> = {
-  clientName: 'openagent',
+  clientName: 'mustard',
   clientVersion: '0.0.0',
   timeout: 30000,
 };
