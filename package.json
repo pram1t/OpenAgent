@@ -30,7 +30,7 @@
     "vitest": "^4.0.17"
   },
   "dependencies": {
-    "pino": "^10.2.0",
+    "pino": "^10.3.1",
     "pino-pretty": "^13.1.3"
   }
 }
